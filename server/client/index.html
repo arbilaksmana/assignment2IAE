@@ -1,0 +1,337 @@
+<!doctype html>
+<html lang="id" class="scroll-smooth">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>eBlog - Modern Blog Platform</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    // Tailwind config untuk light mode yang clean
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: {
+              DEFAULT: "#3b82f6",
+              50: "#eff6ff",
+              100: "#dbeafe",
+              500: "#3b82f6",
+              600: "#2563eb",
+              700: "#1d4ed8"
+            },
+            gray: {
+              50: "#f9fafb",
+              100: "#f3f4f6",
+              200: "#e5e7eb",
+              300: "#d1d5db",
+              400: "#9ca3af",
+              500: "#6b7280",
+              600: "#4b5563",
+              700: "#374151",
+              800: "#1f2937",
+              900: "#111827"
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* Mobile-optimized modal styles */
+    @media (max-width: 640px) {
+      dialog[open] {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        margin: 0;
+        max-height: 100vh;
+        max-width: 100vw;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+      }
+      
+      dialog[open] > div {
+        width: 100%;
+        max-width: none;
+        margin: 0;
+        max-height: calc(100vh - 2rem);
+        overflow-y: auto;
+      }
+      
+      /* Prevent body scroll when modal is open */
+      body.modal-open {
+        overflow: hidden;
+        position: fixed;
+        width: 100%;
+      }
+    }
+    
+    /* Touch-friendly button sizes */
+    @media (max-width: 640px) {
+      button {
+        min-height: 44px; /* iOS touch target minimum */
+      }
+    }
+    
+    /* Smooth modal animations */
+    dialog {
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+    
+    dialog:not([open]) {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+    
+    dialog[open] {
+      opacity: 1;
+      transform: scale(1);
+    }
+  </style>
+</head>
+
+<body class="bg-gray-50 text-gray-900 font-sans antialiased">
+  <!-- Topbar -->
+  <header class="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-30">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-14 sm:h-16">
+        <!-- Logo -->
+        <div class="flex items-center gap-2 sm:gap-3">
+          <div
+            class="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-primary-500 to-primary-700 text-white font-bold text-base sm:text-lg shadow-lg">
+            e
+          </div>
+          <div class="hidden sm:block">
+            <h1 class="text-lg sm:text-xl font-bold text-gray-900">eBlog</h1>
+            <p class="text-xs text-gray-500">Modern Blog Platform</p>
+          </div>
+          <div class="block sm:hidden">
+            <h1 class="text-lg font-bold text-gray-900">eBlog</h1>
+          </div>
+        </div>
+
+        <!-- Search -->
+        <div class="hidden md:flex items-center gap-3 flex-1 max-w-md mx-8">
+          <div class="relative flex-1">
+            <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor">
+              <path stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                d="m21 21-4.3-4.3M11 19a8 8 0 1 1 0-16 8 8 0 0 1 0 16Z" />
+            </svg>
+            <input id="search" placeholder="Cari artikel..."
+              class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200" />
+          </div>
+          <button id="searchBtn"
+            class="px-4 py-2.5 bg-primary-500 text-white rounded-xl hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition-all duration-200 font-medium">
+            Cari
+          </button>
+        </div>
+
+        <!-- Actions -->
+        <div class="flex items-center gap-2">
+          <button id="refreshBtn"
+            class="p-2.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-xl transition-all duration-200"
+            title="Refresh">
+            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="grid lg:grid-cols-3 gap-8">
+      <!-- Form -->
+      <section class="lg:col-span-1">
+        <div class="bg-white rounded-2xl shadow-lg border border-gray-200 p-4 sm:p-6 sticky top-20 lg:top-24">
+          <div class="flex items-center gap-2 mb-6">
+            <div class="w-8 h-8 bg-primary-100 rounded-lg flex items-center justify-center">
+              <svg class="w-4 h-4 text-primary-600" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+              </svg>
+            </div>
+            <h2 class="text-lg font-semibold text-gray-900">Buat Artikel Baru</h2>
+          </div>
+
+          <form id="postForm" class="space-y-4">
+            <input type="hidden" id="postId" />
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Judul Artikel</label>
+              <input id="title"
+                class="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
+                placeholder="Masukkan judul artikel..." required />
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Konten</label>
+              <textarea id="content"
+                class="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 h-32 resize-none"
+                placeholder="Tulis konten artikel Anda..." required></textarea>
+            </div>
+
+            <div class="grid grid-cols-1 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Penulis (opsional)</label>
+                <input id="author"
+                  class="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
+                  placeholder="Nama penulis" />
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Tags</label>
+                <input id="tags"
+                  class="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
+                  placeholder="teknologi, tutorial, tips" />
+              </div>
+            </div>
+
+            <div class="flex items-center gap-3">
+              <input id="published" type="checkbox"
+                class="w-4 h-4 text-primary-600 bg-gray-100 border-gray-300 rounded focus:ring-primary-500 focus:ring-2"
+                checked />
+              <label class="text-sm font-medium text-gray-700">Publikasikan artikel</label>
+            </div>
+
+            <div class="flex flex-col sm:flex-row gap-3 pt-2">
+              <button
+                class="flex-1 bg-primary-500 text-white px-6 py-3 rounded-xl hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition-all duration-200 font-medium"
+                type="submit">
+                Simpan Artikel
+              </button>
+              <button id="resetBtn"
+                class="flex-1 sm:flex-none px-6 py-3 rounded-xl border border-gray-200 text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-all duration-200 font-medium"
+                type="button">
+                Reset
+              </button>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <!-- List -->
+      <section class="lg:col-span-2">
+        <!-- Search (mobile) -->
+        <div class="flex lg:hidden items-center gap-3 mb-6">
+          <div class="relative flex-1">
+            <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor">
+              <path stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                d="m21 21-4.3-4.3M11 19a8 8 0 1 1 0-16 8 8 0 0 1 0 16Z" />
+            </svg>
+            <input id="searchMobile" placeholder="Cari artikel..."
+              class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200" />
+          </div>
+          <button id="searchBtnMobile"
+            class="px-4 py-2.5 bg-primary-500 text-white rounded-xl hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition-all duration-200 font-medium">
+            Cari
+          </button>
+        </div>
+
+        <!-- Articles Grid -->
+        <div class="space-y-6">
+          <div class="flex items-center justify-between">
+            <h2 class="text-2xl font-bold text-gray-900">Artikel Terbaru</h2>
+            <div class="text-sm text-gray-500">
+              <span id="articleCount">0 artikel</span>
+            </div>
+          </div>
+
+          <ul id="list" class="grid gap-6"></ul>
+
+          <div id="empty" class="hidden text-center py-16">
+            <div class="w-20 h-20 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <svg class="w-8 h-8 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+            </div>
+            <h3 class="text-lg font-semibold text-gray-900 mb-2">Belum ada artikel</h3>
+            <p class="text-gray-500 mb-6">Mulai dengan membuat artikel pertama Anda!</p>
+            <button
+              class="bg-primary-500 text-white px-6 py-3 rounded-xl hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition-all duration-200 font-medium">
+              Buat Artikel Pertama
+            </button>
+          </div>
+
+          <div id="pager" class="flex justify-center items-center gap-2 mt-8"></div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!-- Toast -->
+  <div id="toast" class="fixed bottom-4 left-4 right-4 sm:bottom-6 sm:right-6 sm:left-auto sm:w-auto hidden px-4 sm:px-6 py-3 sm:py-4 rounded-xl bg-gray-900 text-white shadow-xl z-50">
+    <div class="flex items-center gap-3">
+      <div class="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0">
+        <svg class="w-3 h-3 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <path stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+        </svg>
+      </div>
+      <span class="font-medium text-sm sm:text-base"></span>
+    </div>
+  </div>
+
+  <!-- Modal Confirm -->
+  <dialog id="confirmModal" class="rounded-2xl p-0 backdrop:bg-black/50 backdrop:backdrop-blur-sm">
+    <div class="bg-white rounded-2xl p-6 w-full max-w-sm mx-4 sm:mx-auto sm:w-96">
+      <!-- Mobile-optimized header -->
+      <div class="flex items-start gap-3 mb-6">
+        <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
+          <svg class="w-6 h-6 text-red-600" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+        </div>
+        <div class="flex-1 min-w-0">
+          <h3 class="text-lg font-semibold text-gray-900 mb-1">Hapus Artikel?</h3>
+          <p class="text-sm text-gray-500 leading-relaxed">Tindakan ini tidak bisa dibatalkan dan artikel akan dihapus secara permanen.</p>
+        </div>
+      </div>
+      
+      <!-- Mobile-optimized buttons -->
+      <div class="flex flex-col sm:flex-row gap-3 sm:justify-end">
+        <button id="cancelDel"
+          class="w-full sm:w-auto px-6 py-3 rounded-xl border border-gray-200 text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-all duration-200 font-medium text-center">
+          Batal
+        </button>
+        <button id="confirmDel"
+          class="w-full sm:w-auto px-6 py-3 rounded-xl bg-red-500 text-white hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-all duration-200 font-medium text-center">
+          Ya, Hapus
+        </button>
+      </div>
+    </div>
+  </dialog>
+
+  <footer class="bg-white border-t border-gray-200 mt-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div class="text-center">
+        <div class="flex items-center justify-center gap-2 mb-4">
+          <div
+            class="w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-700 rounded-lg flex items-center justify-center text-white font-bold">
+            e
+          </div>
+          <span class="text-xl font-bold text-gray-900">eBlog</span>
+        </div>
+        <p class="text-gray-500 mb-4">© 2025 eBlog. All rights reserved.</p>
+        <p class="text-sm text-gray-400">Created by Arbi Laksmana Putra Rosydin - 102022580029</p>
+      </div>
+    </div>
+  </footer>
+
+  <script type="module" src="./main.js"></script>
+</body>
+
+</html>
